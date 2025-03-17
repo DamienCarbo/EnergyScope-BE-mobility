@@ -80,8 +80,8 @@ param end_uses_input {i in END_USES_INPUT} := sum {s in SECTORS} (end_uses_deman
 param i_rate > 0; # discount rate [-]: real discount rate
 param re_share_primary >= 0; # re_share [-]: minimum share of primary energy coming from RE
 param gwp_limit >= 0;    # [ktCO2-eq./year] maximum gwp emissions allowed.
-param share_mobility_public_min >= 0, <= 1; # %_public,min [-]: min limit for penetration of public mobility over total mobility 
-param share_mobility_public_max >= 0, <= 1; # %_public,max [-]: max limit for penetration of public mobility over total mobility 
+param share_mobility_public_urban_min >= 0, <= 1; # %_public,min [-]: min limit for penetration of public mobility over total mobility 
+param share_mobility_public_urban_max >= 0, <= 1; # %_public,max [-]: max limit for penetration of public mobility over total mobility 
 param share_freight_train_min >= 0, <= 1; # %_rail,min [-]: min limit for penetration of train in freight transportation
 param share_freight_train_max >= 0, <= 1; # %_rail,min [-]: max limit for penetration of train in freight transportation
 param share_freight_boat_min  >= 0, <= 1; # %_boat,min [-]: min limit for penetration of boat in freight transportation
@@ -134,7 +134,7 @@ param total_time := sum {t in PERIODS, h in HOUR_OF_PERIOD [t], td in TYPICAL_DA
 #####################################
 
 ##Independent variables [Table 2.3] :
-var Share_mobility_public >= share_mobility_public_min, <= share_mobility_public_max; # %_Public: Ratio [0; 1] public mobility over total passenger mobility
+var Share_mobility_public_urban >= share_mobility_public_urban_min, <= share_mobility_public_urban_max; # %_Public: Ratio [0; 1] public mobility over total passenger mobility
 var Share_freight_train, >= share_freight_train_min, <= share_freight_train_max; # %_Fr,Rail: Ratio [0; 1] rail transport over total freight transport
 var Share_freight_road, >= share_freight_road_min, <= share_freight_road_max; # %_Fr,Truck: Ratio [0; 1] Truck transport over total freight transport
 var Share_freight_boat, >= share_freight_boat_min, <= share_freight_boat_max; # %_Fr,Boat: Ratio [0; 1] boat transport over total freight transport
@@ -178,10 +178,10 @@ subject to end_uses_t {l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
 			(end_uses_input["HEAT_LOW_T_HW"] / total_time + end_uses_input["HEAT_LOW_T_SH"] * heating_time_series [h, td] / t_op [h, td] ) * Share_heat_dhn + Network_losses [l,h,td]
 		else (if l == "HEAT_LOW_T_DECEN" then
 			(end_uses_input["HEAT_LOW_T_HW"] / total_time + end_uses_input["HEAT_LOW_T_SH"] * heating_time_series [h, td] / t_op [h, td] ) * (1 - Share_heat_dhn)
-		else (if l == "MOB_PUBLIC" then
-			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * Share_mobility_public
-		else (if l == "MOB_PRIVATE" then
-			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * (1 - Share_mobility_public)
+		else (if l == "MOB_PUBLIC_URBAN" then
+			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * Share_mobility_public_urban
+		else (if l == "MOB_PRIVATE_NA_URBAN" then
+			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * (1 - Share_mobility_public_urban)
 		else (if l == "MOB_FREIGHT_RAIL" then
 			(end_uses_input["MOBILITY_FREIGHT"]   * mob_freight_time_series [h, td] / t_op [h, td] ) *  Share_freight_train
 		else (if l == "MOB_FREIGHT_ROAD" then
