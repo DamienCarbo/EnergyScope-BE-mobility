@@ -86,8 +86,15 @@ def print_data(config):
             'power_density_solar_thermal']  # Solar thermal : 1 kW/3.5m2 => 0.2857 kW/m2 => 0.2857 GW/km2
 
         # Technologies shares
-        share_mobility_public_min = config['all_data']['Misc']['share_mobility_public_min']
-        share_mobility_public_max = config['all_data']['Misc']['share_mobility_public_max']
+        share_urban = config['all_data']['Misc']['share_urban']
+        share_mobility_public_urban_min = config['all_data']['Misc']['share_mobility_public_urban_min']
+        share_mobility_public_urban_max = config['all_data']['Misc']['share_mobility_public_urban_max']
+        share_mobility_active_urban_min = config['all_data']['Misc']['share_mobility_active_urban_min']
+        share_mobility_active_urban_max = config['all_data']['Misc']['share_mobility_active_urban_max']
+        share_mobility_public_rural_min = config['all_data']['Misc']['share_mobility_public_rural_min']
+        share_mobility_public_rural_max = config['all_data']['Misc']['share_mobility_public_rural_max']
+        share_mobility_active_rural_min = config['all_data']['Misc']['share_mobility_active_rural_min']
+        share_mobility_active_rural_max = config['all_data']['Misc']['share_mobility_active_rural_max']
         share_freight_train_min = config['all_data']['Misc']['share_freight_train_min']
         share_freight_train_max = config['all_data']['Misc']['share_freight_train_max']
         share_freight_road_min = config['all_data']['Misc']['share_freight_road_min']
@@ -263,8 +270,8 @@ def print_data(config):
         print_set(['TS_DEC_BOILER_GAS'], 'TS_OF_DEC_TECH ["DEC_BOILER_GAS"]', out_path)
         print_set(['TS_DEC_BOILER_WOOD'], 'TS_OF_DEC_TECH ["DEC_BOILER_WOOD"]', out_path)
         print_set(['TS_DEC_BOILER_OIL'], 'TS_OF_DEC_TECH ["DEC_BOILER_OIL"]', out_path)
-        print_set(['PHEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_PHEV"]', out_path)
-        print_set(['BEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_BEV"]', out_path)
+        print_set(['PHEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_PHEV_URBAN"]', out_path)
+        print_set(['BEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_BEV_URBAN"]', out_path)
         newline(out_path)
         with open(out_path, mode='a', newline='') as file:
             writer = csv.writer(file, delimiter='\t', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
@@ -311,8 +318,15 @@ def print_data(config):
             writer.writerow(['# end_Uses_year see part [2.1]'])
         print_df('param end_uses_demand_year : ', eud_simple, out_path)
         newline(out_path)
-        print_param('share_mobility_public_min', share_mobility_public_min, '', out_path)
-        print_param('share_mobility_public_max', share_mobility_public_max, '', out_path)
+        print_param('share_urban', share_urban, '', out_path)
+        print_param('share_mobility_public_urban_min', share_mobility_public_urban_min, '', out_path)
+        print_param('share_mobility_public_urban_max', share_mobility_public_urban_max, '', out_path)
+        print_param('share_mobility_active_urban_min', share_mobility_active_urban_min, '', out_path)
+        print_param('share_mobility_active_urban_max', share_mobility_active_urban_max, '', out_path)
+        print_param('share_mobility_public_rural_min', share_mobility_public_rural_min, '', out_path)
+        print_param('share_mobility_public_rural_max', share_mobility_public_rural_max, '', out_path)
+        print_param('share_mobility_active_rural_min', share_mobility_active_rural_min, '', out_path)
+        print_param('share_mobility_active_rural_max', share_mobility_active_rural_max, '', out_path)
         newline(out_path)
         print_param('share_freight_train_min', share_freight_train_min, '', out_path)
         print_param('share_freight_train_max', share_freight_train_max, '', out_path)

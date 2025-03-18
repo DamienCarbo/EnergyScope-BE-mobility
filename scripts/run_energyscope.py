@@ -31,7 +31,6 @@ if __name__ == '__main__':
     if not analysis_only:
         # Printing the .dat files for the optimisation problem       
         es.print_data(config)
-
         # Running EnergyScope
         es.run_es(config)
 
