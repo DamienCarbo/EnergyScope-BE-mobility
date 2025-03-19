@@ -324,7 +324,7 @@ subject to storage_layer_out {j in STORAGE_TECH, l in LAYERS, h in HOURS, td in 
 	Storage_out [j, l, h, td] * (ceil (storage_eff_out [j, l]) - 1) = 0;
 		
 # [Eq. 2.19] limit the Energy to power ratio for storage technologies except EV batteries
-subject to limit_energy_to_power_ratio {j in STORAGE_TECH diff {"BEV_BATT","PHEV_BATT"}, l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
+subject to limit_energy_to_power_ratio {j in STORAGE_TECH diff {"BEV_BATT_URBAN","PHEV_BATT_URBAN","BEV_BATT_RURAL","PHEV_BATT_RURAL"}, l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
 	Storage_in [j, l, h, td] * storage_charge_time[j] + Storage_out [j, l, h, td] * storage_discharge_time[j] <=  F [j] * storage_availability[j];
 	
 # [Eq. 2.19-bis] limit the Energy to power ratio for EV batteries

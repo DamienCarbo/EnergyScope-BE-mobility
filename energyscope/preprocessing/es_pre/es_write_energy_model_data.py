@@ -179,8 +179,10 @@ def print_data(config):
             elif storage_eff_in.loc[i, 'HEAT_HIGH_T'] > 0:
                 STORAGE_OF_END_USES_TYPES_HIGH_T.append(i)
 
-        STORAGE_OF_END_USES_TYPES_ELEC.remove('BEV_BATT')
-        STORAGE_OF_END_USES_TYPES_ELEC.remove('PHEV_BATT')
+        STORAGE_OF_END_USES_TYPES_ELEC.remove('BEV_BATT_URBAN')
+        STORAGE_OF_END_USES_TYPES_ELEC.remove('PHEV_BATT_URBAN')
+        STORAGE_OF_END_USES_TYPES_ELEC.remove('BEV_BATT_RURAL')
+        STORAGE_OF_END_USES_TYPES_ELEC.remove('PHEV_BATT_RURAL')
 
         # etc. still TS_OF_DEC_TECH and EVs_BATT_OF_V2G missing... -> hard coded !
 
@@ -270,8 +272,10 @@ def print_data(config):
         print_set(['TS_DEC_BOILER_GAS'], 'TS_OF_DEC_TECH ["DEC_BOILER_GAS"]', out_path)
         print_set(['TS_DEC_BOILER_WOOD'], 'TS_OF_DEC_TECH ["DEC_BOILER_WOOD"]', out_path)
         print_set(['TS_DEC_BOILER_OIL'], 'TS_OF_DEC_TECH ["DEC_BOILER_OIL"]', out_path)
-        print_set(['PHEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_PHEV_URBAN"]', out_path)
-        print_set(['BEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_BEV_URBAN"]', out_path)
+        print_set(['PHEV_BATT_URBAN'], 'EVs_BATT_OF_V2G ["CAR_PHEV_URBAN"]', out_path)
+        print_set(['BEV_BATT_URBAN'], 'EVs_BATT_OF_V2G ["CAR_BEV_URBAN"]', out_path)
+        print_set(['PHEV_BATT_RURAL'], 'EVs_BATT_OF_V2G ["CAR_PHEV_RURAL"]', out_path)
+        print_set(['BEV_BATT_RURAL'], 'EVs_BATT_OF_V2G ["CAR_BEV_RURAL"]', out_path)
         
         newline(out_path)
         with open(out_path, mode='a', newline='') as file:
