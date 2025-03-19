@@ -272,6 +272,7 @@ def print_data(config):
         print_set(['TS_DEC_BOILER_OIL'], 'TS_OF_DEC_TECH ["DEC_BOILER_OIL"]', out_path)
         print_set(['PHEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_PHEV_URBAN"]', out_path)
         print_set(['BEV_BATT'], 'EVs_BATT_OF_V2G ["CAR_BEV_URBAN"]', out_path)
+        
         newline(out_path)
         with open(out_path, mode='a', newline='') as file:
             writer = csv.writer(file, delimiter='\t', quotechar=' ', quoting=csv.QUOTE_MINIMAL)

@@ -194,6 +194,12 @@ subject to end_uses_t {l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
 			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * share_urban * (1 - Share_mobility_public_urban - Share_mobility_active_urban)
 		else (if l == "MOB_PRIVATE_A_URBAN" then
 			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * share_urban * (Share_mobility_active_urban)
+		else (if l == "MOB_PUBLIC_RURAL" then
+			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * (1 - share_urban) * Share_mobility_public_rural
+		else (if l == "MOB_PRIVATE_NA_RURAL" then
+			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * (1 - share_urban) * (1 - Share_mobility_public_rural - Share_mobility_active_rural)
+		else (if l == "MOB_PRIVATE_A_RURAL" then
+			(end_uses_input["MOBILITY_PASSENGER"] * mob_pass_time_series [h, td] / t_op [h, td]  ) * (1 - share_urban) * (Share_mobility_active_rural)
 		else (if l == "MOB_FREIGHT_RAIL" then
 			(end_uses_input["MOBILITY_FREIGHT"]   * mob_freight_time_series [h, td] / t_op [h, td] ) *  Share_freight_train
 		else (if l == "MOB_FREIGHT_ROAD" then
@@ -209,7 +215,7 @@ subject to end_uses_t {l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
 		else (if l == "METHANOL" then
 			end_uses_input["NON_ENERGY"] * share_ned ["METHANOL"] / total_time
 		else 
-			0 ))))))))))))); # For all layers which don't have an end-use demand
+			0 )))))))))))))))); # For all layers which don't have an end-use demand
 
 
 ## Cost
