@@ -75,7 +75,7 @@ Mobility;Freight;Truck electric; TRUCK_ELEC ;981.55;23.13333333;0;15;0.092592593
 Mobility;Freight;Truck gas; TRUCK_NG ;350.99;18.55555556;0;15;0.092592593;0.053;0.053;3.183;3.19E+00;
 Infrastructure;Infrastructure;Efficiency mesures in energy system; EFFICIENCY ;5600;0;0;1;1;0;1;0;1E+02;
 Infrastructure;Infrastructure;Distric heating network; DHN ;825.88;0;0;60;1;0;1;0;1E+02;
-Infrastructure;Infrastructure;Electrical grid cost; GRID  ;74919.06;0;0;80;1;0;1;0;1E+02;
+Infrastructure;Infrastructure;Electrical GRID_ELEC cost; GRID_ELEC  ;74919.06;0;0;80;1;0;1;0;1E+02;
 Synthetic fuels;Synthetic fuels;Electrolysers;H2_ELECTROLYSIS;10000;27500000;0;15;0.891;0;1;0;0E+00;H2
 Synthetic fuels;Synthetic fuels;Steam methane reforming; SMR ;820.67;75.73189522;0;25;0.8514;0;1;1.485;1.49E+00;H2
 Synthetic fuels;Synthetic fuels;Biomass to hydrogen;H2_BIOMASS;6060.93;426.9858431;0;25;0.8514;0;1;0;0E+00;H2

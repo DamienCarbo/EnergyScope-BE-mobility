@@ -34,7 +34,7 @@
 # Built-in/Generic Imports
 import sys, getopt
 from pathlib import Path
-
+import os
 # Libraries
 import pandas as pd
 import plotly.graph_objects as go
@@ -51,6 +51,7 @@ Usage: ESSankey.py [OPTIONS]
 \t\t-o file, --ofile=file\n\t\t\tindicate the output html (temporary) file. Default is \'directory_path/python_generated_sankey.html\'.
 \t\t-n, --no-open
 \t\t\tprevent from automatically opening the generated html file in the browser.'''
+
 
 def drawSankey(path="./",outputfile='TO_REPLACE',auto_open=True):
     path = Path(path)
@@ -173,5 +174,5 @@ if __name__ == '__main__':
     #print("Executing without argument: assuming that this program file is in the same directory as the 'input2sankey.csv' directory.\nThe default input file is thus './input2sankey.csv'.")
     #print("If this does not work, please open python3 and run:\n\t>>> from ESSankey.py import drawSankey\n\t>>> drawSankey(path='/path/to/sankey/')")
     # main(sys.argv[1:])
-    path = Path('../../case_studies//test2/output/sankey')
+    path = Path('../../case_studies//Test 3/output/sankey')
     drawSankey(path=path, auto_open=True)

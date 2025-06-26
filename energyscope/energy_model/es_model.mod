@@ -42,22 +42,23 @@ set END_USES_TYPES := setof {i in END_USES_CATEGORIES, j in END_USES_TYPES_OF_CA
 set TECHNOLOGIES_OF_END_USES_TYPE {END_USES_TYPES}; # set all energy conversion technologies (excluding storage technologies and infrastructure)
 set STORAGE_TECH; #  set of storage technologies 
 set STORAGE_OF_END_USES_TYPES {END_USES_TYPES} within STORAGE_TECH; # set all storage technologies related to an end-use types (used for thermal solar (TS))
-set INFRASTRUCTURE; # Infrastructure: DHN, grid, and intermediate energy conversion technologies (i.e. not directly supplying end-use demand)
+set INFRASTRUCTURE; # Infrastructure: DHN, GRID_ELEC, and intermediate energy conversion technologies (i.e. not directly supplying end-use demand)
 
 ## SECONDARY SETS: a secondary set is defined by operations on MAIN SETS
 set LAYERS := (RESOURCES diff BIOFUELS diff EXPORT) union END_USES_TYPES; # Layers are used to balance resources/products in the system
 set TECHNOLOGIES := (setof {i in END_USES_TYPES, j in TECHNOLOGIES_OF_END_USES_TYPE [i]} j) union STORAGE_TECH union INFRASTRUCTURE; 
 set TECHNOLOGIES_OF_END_USES_CATEGORY {i in END_USES_CATEGORIES} within TECHNOLOGIES := setof {j in END_USES_TYPES_OF_CATEGORY[i], k in TECHNOLOGIES_OF_END_USES_TYPE [j]} k;
 set RE_RESOURCES within RESOURCES; # List of RE resources (including wind hydro solar), used to compute the RE share
-set V2G within TECHNOLOGIES;   # EVs which can be used for vehicle-to-grid (V2G).
+set V2G within TECHNOLOGIES;   # EVs which can be used for vehicle-to-GRID_ELEC (V2G).
 set EVs_BATT   within STORAGE_TECH; # specific battery of EVs
 set EVs_BATT_OF_V2G {V2G}; # Makes the link between batteries of EVs and the V2G technology
 set STORAGE_DAILY within STORAGE_TECH;# Storages technologies for daily application 
 set TS_OF_DEC_TECH {TECHNOLOGIES_OF_END_USES_TYPE["HEAT_LOW_T_DECEN"] diff {"DEC_SOLAR"}} ; # Makes the link between TS and the technology producing the heat
-
 ##Additional SETS added just to simplify equations.
 set TYPICAL_DAY_OF_PERIOD {t in PERIODS} := setof {h in HOURS, td in TYPICAL_DAYS: (t,h,td) in T_H_TD} td; #TD_OF_PERIOD(T)
 set HOUR_OF_PERIOD {t in PERIODS} := setof {h in HOURS, td in TYPICAL_DAYS: (t,h,td) in T_H_TD} h; #H_OF_PERIOD(T)
+set chargers_types within INFRASTRUCTURE ordered; # chargers for all type of fuel (electricity, hydrogen, etc.)
+set Chargingveh within TECHNOLOGIES ordered; # charging technologies for all type of fuel (electricity, hydrogen, etc.)
 
 ## Additional SETS: only needed for printing out results (not represented in Figure 3).
 set COGEN within TECHNOLOGIES; # cogeneration tech
@@ -121,14 +122,16 @@ param storage_losses {STORAGE_TECH} >= 0, <= 1; # %_sto_loss [-]: Self losses in
 param storage_charge_time    {STORAGE_TECH} >= 0; # t_sto_in [h]: Time to charge storage (Energy to Power ratio). If value =  5 <=>  5h for a full charge.
 param storage_discharge_time {STORAGE_TECH} >= 0; # t_sto_out [h]: Time to discharge storage (Energy to Power ratio). If value =  5 <=>  5h for a full discharge.
 param storage_availability {STORAGE_TECH} >=0, default 1;# %_sto_avail [-]: Storage technology availability to charge/discharge. Used for EVs 
-param loss_network {END_USES_TYPES} >= 0 default 0; # %_net_loss: Losses coefficient [0; 1] in the networks (grid and DHN)
+param loss_network {END_USES_TYPES} >= 0 default 0; # %_net_loss: Losses coefficient [0; 1] in the networks (GRID_ELEC and DHN)
 param batt_per_car {V2G} >= 0; # ev_batt_size [GWh]: Battery size per EVs car technology
 param state_of_charge_ev {EVs_BATT,HOURS} >= 0, default 0; # Minimum state of charge of the EV during the day. 
-param c_grid_extra >=0; # Cost to reinforce the grid due to IRE penetration [Meuros/GW of (PV + Wind)].
+param c_GRID_ELEC_extra >=0; # Cost to reinforce the GRID_ELEC due to IRE penetration [Meuros/GW of (PV + Wind)].
 param import_capacity >= 0; # Maximum electricity import capacity [GW]
 param solar_area >= 0; # Maximum land available for PV deployment [km2]
 param power_density_pv >=0 default 0;# Maximum power irradiance for PV.
 param power_density_solar_thermal >=0 default 0;# Maximum power irradiance for solar thermal.
+param Charger_ind {chargers_types,Chargingveh} >= 0; # for each type of charger the vehicle are attributed to it
+param Chargingoccupancy {chargers_types,Chargingveh } >= 0; # for each type of charger the occupancy is defined
 
 
 ##Additional parameter (hard coded as '8760' in the thesis)
@@ -159,6 +162,9 @@ var Shares_mobility_freight {TECHNOLOGIES_OF_END_USES_CATEGORY["MOBILITY_FREIGHT
 var Shares_lowT_dec {TECHNOLOGIES_OF_END_USES_TYPE["HEAT_LOW_T_DECEN"] diff {"DEC_SOLAR"}}>=0 ; # %_HeatDec [-]: Constant share of heat Low T decentralised + its specific thermal solar
 var F_solar         {TECHNOLOGIES_OF_END_USES_TYPE["HEAT_LOW_T_DECEN"] diff {"DEC_SOLAR"}} >=0; # F_sol [GW]: Solar thermal installed capacity per heat decentralised technologies
 var F_t_solar       {TECHNOLOGIES_OF_END_USES_TYPE["HEAT_LOW_T_DECEN"] diff {"DEC_SOLAR"}, h in HOURS, td in TYPICAL_DAYS} >= 0; # F_t_sol [GW]: Solar thermal operating per heat decentralised technologies
+var Max_H2_Consumption >= 0; # [GW] Pic de consommation d'hydrogène
+var Max_NG_Consumption >= 0; # [GW] Pic de production de natural gas
+var Max_AMMONIA_Consumption >= 0; # [GW] Pic de production d'ammonia
 
 ##Dependent variables [Table 2.4] :
 var End_uses {LAYERS, HOURS, TYPICAL_DAYS} >= 0; #EndUses [GW]: total demand for each type of end-uses (hourly power). Defined for all layers (0 if not demand). [Mpkm] or [Mtkm] for passenger or freight mobility.
@@ -169,7 +175,7 @@ var C_op {RESOURCES} >= 0; #C_op [Meuros/year]: Total O&M cost of each resource
 var TotalGWP >= 0; # GWP_tot [ktCO2-eq./year]: Total global warming potential (GWP) emissions in the system
 var GWP_constr {TECHNOLOGIES} >= 0; # GWP_constr [ktCO2-eq.]: Total emissions of the technologies
 var GWP_op {RESOURCES} >= 0; #  GWP_op [ktCO2-eq.]: Total yearly emissions of the resources [ktCO2-eq./y]
-var Network_losses {END_USES_TYPES, HOURS, TYPICAL_DAYS} >= 0; # Net_loss [GW]: Losses in the networks (normally electricity grid and DHN)
+var Network_losses {END_USES_TYPES, HOURS, TYPICAL_DAYS} >= 0; # Net_loss [GW]: Losses in the networks (normally electricity GRID_ELEC and DHN)
 var Storage_level {STORAGE_TECH, PERIODS} >= 0; # Sto_level [GWh]: Energy stored at each period
 
 #############################################
@@ -327,10 +333,6 @@ subject to storage_layer_out {j in STORAGE_TECH, l in LAYERS, h in HOURS, td in 
 subject to limit_energy_to_power_ratio {j in STORAGE_TECH diff {"BEV_BATT_URBAN","PHEV_BATT_URBAN","BEV_BATT_RURAL","PHEV_BATT_RURAL"}, l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
 	Storage_in [j, l, h, td] * storage_charge_time[j] + Storage_out [j, l, h, td] * storage_discharge_time[j] <=  F [j] * storage_availability[j];
 	
-# [Eq. 2.19-bis] limit the Energy to power ratio for EV batteries
-subject to limit_energy_to_power_ratio_bis {i in V2G, j in EVs_BATT_OF_V2G[i], l in LAYERS, h in HOURS, td in TYPICAL_DAYS}:
-	Storage_in [j, l, h, td] * storage_charge_time[j] + (Storage_out [j, l, h, td] + layers_in_out[i,"ELECTRICITY"]* F_t [i, h, td]) * storage_discharge_time[j]  <= ( F [j] - F_t [i,h,td] / vehicule_capacity [i] * batt_per_car[i] ) * storage_availability[j];
-
 ## Networks
 #----------------
 
@@ -338,12 +340,12 @@ subject to limit_energy_to_power_ratio_bis {i in V2G, j in EVs_BATT_OF_V2G[i], l
 subject to network_losses {eut in END_USES_TYPES, h in HOURS, td in TYPICAL_DAYS}:
 	Network_losses [eut,h,td] = (sum {j in RESOURCES union TECHNOLOGIES diff STORAGE_TECH: layers_in_out [j, eut] > 0} ((layers_in_out[j, eut]) * F_t [j, h, td])) * loss_network [eut];
 
-# [Eq. 2.21]  Extra grid cost for integrating 1 GW of RE is estimated to 367.8Meuros per GW of intermittent renewable (27beuros to integrate the overall potential) 
-subject to extra_grid:
-	F ["GRID"] = 1 +  (c_grid_extra / c_inv["GRID"]) *(    (F ["WIND_ONSHORE"]     + F ["WIND_OFFSHORE"]     + F ["PV"]      )
+# [Eq. 2.21]  Extra GRID_ELEC cost for integrating 1 GW of RE is estimated to 367.8Meuros per GW of intermittent renewable (27beuros to integrate the overall potential) 
+subject to extra_GRID_ELEC:
+	F ["GRID_ELEC"] = 1 +  (c_GRID_ELEC_extra / c_inv["GRID_ELEC"]) *(    (F ["WIND_ONSHORE"]     + F ["WIND_OFFSHORE"]     + F ["PV"]      )
 					                                     - (f_min ["WIND_ONSHORE"] + f_min ["WIND_OFFSHORE"] + f_min ["PV"]) );
 
-# [Eq. 2.22] DHN: assigning a cost to the network equal to the power capacity connected to the grid
+# [Eq. 2.22] DHN: assigning a cost to the network equal to the power capacity connected to the GRID_ELEC
 subject to extra_dhn:
 	F ["DHN"] = sum {j in TECHNOLOGIES diff STORAGE_TECH: layers_in_out [j,"HEAT_LOW_T_DHN"] > 0} (layers_in_out [j,"HEAT_LOW_T_DHN"] * F [j]);
 	
@@ -396,9 +398,22 @@ subject to EV_storage_for_V2G_demand {j in V2G, i in EVs_BATT_OF_V2G[j], h in HO
 	Storage_out [i,"ELECTRICITY",h,td] >=  - layers_in_out[j,"ELECTRICITY"]* F_t [j, h, td];
 		
 # [Eq. 2.31-bis]  Impose a minimum state of charge at some hours of the day:
-subject to ev_minimum_state_of_charge {j in V2G, i in EVs_BATT_OF_V2G[j],  t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}:
+subject to ev_min_soc_lower {j in V2G, i in EVs_BATT_OF_V2G[j],  t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}:
 	Storage_level [i, t] >=  F [i] * state_of_charge_ev [i, h];
 		
+# Charging and fueling infrastructure constraints 
+subject to charging_station_constraints {j in chargers_types} :
+    F[j] = 
+    sum {
+        i in Chargingveh, 
+        l in {"MOB_PRIVATE_NA_URBAN", "MOB_PRIVATE_NA_RURAL", 
+              "MOB_PUBLIC_URBAN", "MOB_PUBLIC_RURAL"},
+        t in PERIODS,
+        h in HOUR_OF_PERIOD[t],
+        td in TYPICAL_DAY_OF_PERIOD[t]
+    }
+        (layers_in_out[i, l] * F_t[i, h, td] * Charger_ind[j,i] 
+        / Chargingoccupancy[j, i]);
 ## Peak demand :
 
 # [Eq. 2.32] Peak in decentralized heating
@@ -412,6 +427,33 @@ subject to max_dhn_heat_demand {h in HOURS, td in TYPICAL_DAYS}:
 # Peak in DHN
 subject to peak_lowT_dhn:
 	sum {j in TECHNOLOGIES_OF_END_USES_TYPE ["HEAT_LOW_T_DHN"], i in STORAGE_OF_END_USES_TYPES["HEAT_LOW_T_DHN"]} (F [j] + F[i]/storage_discharge_time[i]) >= peak_sh_factor * Max_Heat_Demand;
+
+# Contrainte pour calculer le pic de consommation d'hydrogène
+subject to calculate_h2_peak {h in HOURS, td in TYPICAL_DAYS}:
+    Max_H2_Consumption >= sum {j in TECHNOLOGIES diff STORAGE_TECH : layers_in_out[j, "H2"] < 0} 
+        (-layers_in_out[j, "H2"] * F_t[j, h, td]);
+
+# Dimensionner le réseau GRID_H2 en fonction du pic de consommation d'hydrogène
+subject to grid_h2_size:
+    F["GRID_H2"] = Max_H2_Consumption;
+
+# Contrainte pour calculer le pic de production de gaz naturel
+subject to calculate_ng_peak {h in HOURS, td in TYPICAL_DAYS}:
+	Max_NG_Consumption >= sum {j in TECHNOLOGIES diff STORAGE_TECH : layers_in_out[j, "GAS"] < 0} 
+		(-layers_in_out[j, "GAS"] * F_t[j, h, td]);
+
+# Dimensionner le réseau GRID_NG en fonction du pic de production de gaz naturel
+subject to grid_ammonia_size:
+	F["GRID_NG"] = Max_NG_Consumption;
+
+# Contrainte pour calculer le pic de production de gaz naturel
+subject to calculate_ammonia_peak {h in HOURS, td in TYPICAL_DAYS}:
+	Max_AMMONIA_Consumption >= sum {j in TECHNOLOGIES diff STORAGE_TECH : layers_in_out[j, "AMMONIA"] < 0} 
+		(-layers_in_out[j, "AMMONIA"] * F_t[j, h, td]);
+
+# Dimensionner le réseau GRID_AMMONIA en fonction du pic de production de gaz naturel
+subject to grid_ng_size:
+	F["GRID_AMMONIA"] = Max_AMMONIA_Consumption;
 
 
 ## Adaptation for the case study: Constraints needed for the application to Switzerland (not needed in standard LP formulation)

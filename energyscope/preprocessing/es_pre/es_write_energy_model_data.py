@@ -74,6 +74,7 @@ def print_data(config):
         technologies_simple = technologies.drop(columns=['Category', 'Subcategory', 'Technologies name'])
         technologies_simple.index.name = 'param:'
         technologies_simple = technologies_simple.astype('float')
+        
 
         # Economical inputs
         i_rate = config['all_data']['Misc']['i_rate']  # [-]
@@ -106,6 +107,50 @@ def print_data(config):
 
         share_ned = pd.DataFrame.from_dict(config['all_data']['Misc']['share_ned'], orient='index',
                                            columns=['share_ned'])
+        # Charging and fueling data 
+        chargers_types = list(config['all_data']['Misc']['Number_of_vehicles'].keys())
+        keys_to_extract = ['Vehicle', 'Occupancy',"distance"]
+        charging_fuelingbis = pd.DataFrame({key : config['all_data']['Misc']["occupancy_param"][key] for key in keys_to_extract},
+                                       index=config['all_data']['Misc']["occupancy_param"]['Vehicle'])
+        print(charging_fuelingbis)
+        
+        charging_fueling = pd.DataFrame(columns=['Vehicle', 'Occupancy', 'Charger_Type'], dtype=object)
+        chargers_types = list(chargers_types)
+        for i in technologies_simple.index:
+            for j in config['all_data']['Misc']["occupancy_param"]["Vehicle"]:
+                if j in i:
+                    if ("CAR" in i or "MOTORCYCLE" in i) and ("GASOLINE" in i or "DIESEL" in i or "HEV" in i or "PHEV" in i):
+                        Charger_type = "PRIVATE_ICE_STATION"
+                    if "BUS" in i and ("DIESEL" in i or "HYDIESEL" in i):
+                        Charger_type = "PUBLIC_ICE_STATION"
+                    if "CAR" in i and "NG" in i:
+                        Charger_type = "PRIVATE_CNG_STATION"
+                    if "BUS" in i and "NG" in i:
+                        Charger_type = "PUBLIC_CNG_STATION"
+                    if "CAR" in i and "FC" in i:
+                        Charger_type = "PRIVATE_H2_STATION"
+                    if "BUS" in i and "FC" in i:
+                        Charger_type = "PUBLIC_H2_STATION"
+                    if ("CAR" in i or "MOTORCYCLE" in i) and "BEV" in i:
+                        Charger_type = "PRIVATE_EV_CHARGER"
+                    if "BUS" in i and "ELEC" in i:
+                        Charger_type = "PUBLIC_EV_CHARGER"
+                    new_row = pd.DataFrame({'Vehicle': [i], 
+                                        'Occupancy': [charging_fuelingbis.loc[j, 'Occupancy'] * charging_fuelingbis.loc[j, 'distance']] if j in charging_fuelingbis.index else [None], 
+                                        'Charger_Type': [Charger_type]})
+                    charging_fueling = pd.concat([charging_fueling, new_row], ignore_index=True)
+        # Extraire uniquement la colonne spécifiée pour chaque subset
+        Charger_type = charging_fueling['Charger_Type']
+        Chargingveh = list(charging_fueling['Vehicle'])
+        # Create a DataFrame with infrastructures as rows and vehicles as columns
+        Charger_ind = pd.DataFrame(0, index=chargers_types, columns=Chargingveh)
+
+        # Populate the DataFrame with 1 where a vehicle corresponds to an infrastructure type
+        for _, row in charging_fueling.iterrows():
+            Charger_ind.loc[row['Charger_Type'], row['Vehicle']] = 1
+
+        Chargingoccupancy = charging_fueling["Occupancy"]
+
 
         # Electric vehicles :
         # km-pass/h/veh. : Gives the equivalence between capacity and number of vehicles.
@@ -115,10 +160,32 @@ def print_data(config):
                            index=config['all_data']['Misc']['evs']['CAR'])
         state_of_charge_ev = pd.DataFrame.from_dict(config['all_data']['Misc']['state_of_charge_ev'], orient='index',
                                                     columns=np.arange(1, 25))
+        # Créer un DataFrame à partir de Charger_ind
+        if Charger_ind.empty:
+            logging.warning("Charger_ind DataFrame is empty. Skipping further processing.")
+        else:
+            num_columns = Charger_ind.shape[1]  # Number of columns
+            columns = [f"Col_{i+1}" for i in range(num_columns)]  # Generate column names
+            Charger_ind.columns = columns
+            #nommer les colonnes avec les noms de véhicules
+            Charger_ind.columns = Chargingveh
+
+        Chargingoccupancy = pd.DataFrame(Chargingoccupancy)
+        # Transpose the DataFrame
+        Chargingoccupancy = Chargingoccupancy.transpose()
+        # Set column titles to Chargingveh
+        Chargingoccupancy.columns = Chargingveh
+        # Duplicate the first row for each chargers_types and set the index to chargers_types
+        Chargingoccupancy = pd.DataFrame([Chargingoccupancy.iloc[0]] * len(chargers_types), index=chargers_types)
+        # Multiplier les valeurs des colonnes par leurs occurrences dans chargers_types
+        for charger_type, count in config['all_data']['Misc']['Number_of_vehicles'].items():
+            if charger_type in Chargingoccupancy.index:
+                Chargingoccupancy.loc[charger_type] *= count
+        
         # Network
         loss_network = config['all_data']['Misc']['loss_network']
-        c_grid_extra = config['all_data']['Misc'][
-            'c_grid_extra']  # cost to reinforce the grid due to intermittent renewable energy penetration. See 2.2.2
+        c_GRID_ELEC_extra = config['all_data']['Misc'][
+            'c_GRID_ELEC_extra']  # cost to reinforce the GRID_ELEC due to intermittent renewable energy penetration. See 2.2.2
         import_capacity = config['all_data']['Misc']['import_capacity']
         # [GW] Maximum power of electrical interconnections
 
@@ -162,7 +229,7 @@ def print_data(config):
         # EVs
         EVs_BATT = list(evs.loc[:, 'EVs_BATT'])
         V2G = list(evs.index)
-
+        
         # STORAGE_OF_END_USES_TYPES ->  #METHOD 2 (using storage_eff_in)
         STORAGE_OF_END_USES_TYPES_DHN = []
         STORAGE_OF_END_USES_TYPES_DEC = []
@@ -200,6 +267,8 @@ def print_data(config):
         batt_per_car_df = evs[['batt_per_car']]
         vehicule_capacity_df = evs[['vehicule_capacity']]
         state_of_charge_ev = ampl_syntax(state_of_charge_ev, '')
+        Charger_ind = ampl_syntax(Charger_ind, '')
+        Chargingoccupancy = ampl_syntax(Chargingoccupancy, '')
         loss_network_df = pd.DataFrame(data=loss_network.values(), index=loss_network.keys(), columns=[' '])
         # Putting all the df in ampl syntax
         batt_per_car_df = ampl_syntax(batt_per_car_df,
@@ -251,6 +320,8 @@ def print_data(config):
             writer.writerow(['# Storage subsets'])
         print_set(EVs_BATT, 'EVs_BATT', out_path)
         print_set(V2G, 'V2G', out_path)
+        print_set(chargers_types, 'chargers_types', out_path)
+        print_set(Chargingveh, 'Chargingveh', out_path)
         print_set(STORAGE_DAILY, 'STORAGE_DAILY', out_path)
         newline(out_path)
         print_set(STORAGE_OF_END_USES_TYPES_DHN, 'STORAGE_OF_END_USES_TYPES ["HEAT_LOW_T_DHN"]', out_path)
@@ -312,10 +383,13 @@ def print_data(config):
         newline(out_path)
         print_df('param state_of_charge_ev :', state_of_charge_ev, out_path)
         newline(out_path)
+        print_df('param Charger_ind :', Charger_ind, out_path)
+        newline(out_path)
+        print_df('param Chargingoccupancy :', Chargingoccupancy, out_path)
 
-        # printing c_grid_extra and import_capacity
-        print_param('c_grid_extra', c_grid_extra,
-                    'cost to reinforce the grid due to intermittent renewable energy penetration. See 2.2.2', out_path)
+        # printing c_GRID_ELEC_extra and import_capacity
+        print_param('c_GRID_ELEC_extra', c_GRID_ELEC_extra,
+                    'cost to reinforce the GRID_ELEC due to intermittent renewable energy penetration. See 2.2.2', out_path)
         print_param('import_capacity', import_capacity, '', out_path)
         newline(out_path)
         with open(out_path, mode='a', newline='') as file:

@@ -63,11 +63,9 @@ def run_es(config):
     os.chdir((cs / config['case_study']))
     # running ES
     logging.info('Running EnergyScope')
-    
 
     try:
         run(ampl_command, shell=True, check=True)
-        
     except CalledProcessError as e:
         print("The run didn't end normally.")
         print(e)
@@ -76,5 +74,5 @@ def run_es(config):
     os.chdir(config['Working_directory'])
 
     logging.info('End of run')
-    
+
     return

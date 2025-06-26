@@ -124,13 +124,8 @@ if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} (En
                             End_uses ["METHANOL", h, td]   / 1000 , "Methanol",
     "#CC0066", "TWh" >> (PathName & "/sankey/input2sankey.csv");
 }
-## HERE ##
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_METHANOL", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Methanol" , "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_METHANOL","METHANOL"] * F_t ["CAR_METHANOL", h, td]  ) / 1000 , "Methanol",
-        "#CC0066", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BUS_COACH_DIESEL", h, td] +
-F_t["BUS_COACH_HYDIESEL", h, td])  ) > 10 then
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BUS_HYDIESEL_URBAN", h, td] +
+F_t["BUS_HYDIESEL_URBAN", h, td])  ) > 10 then
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BOAT_FREIGHT_METHANOL", h, td]  )  ) > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "Methanol" , "Freight", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
         TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BOAT_FREIGHT_METHANOL","METHANOL"] * F_t ["BOAT_FREIGHT_METHANOL", h, td] ) / 1000 , "Methanol", "#CC0066", "TWh"
@@ -209,18 +204,22 @@ if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} (En
 
 
 ## Gasoline
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} (F_t ["GASOLINE", h, td]  ) > 10 then {
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Imp. Gasoline" , "Gasoline", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}
-                            (layers_in_out["GASOLINE","GASOLINE"] * F_t ["GASOLINE", h, td]  ) / 1000 , "Gasoline",
-    "#808080", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Gasoline", "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}
-                            (layers_in_out["CAR_GASOLINE","GASOLINE"] * F_t ["CAR_GASOLINE", h, td]  + layers_in_out["CAR_HEV","GASOLINE"] * F_t ["CAR_HEV", h, td]   + layers_in_out["CAR_PHEV","GASOLINE"] * F_t ["CAR_PHEV", h, td]  ) / 1000 , "Gasoline",
-    "#808080", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-    }
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} (F_t ["BIOETHANOL", h, td]  ) > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "Imp. Bio-ethanol" , "Gasoline", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}
                             (layers_in_out["BIOETHANOL","GASOLINE"] * F_t ["BIOETHANOL", h, td]  ) / 1000 , "Gasoline",
     "#808080", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} (F_t ["GASOLINE", h, td]  ) > 10 then 
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Imp. Gasoline" , "Gasoline", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}
+                            (layers_in_out["GASOLINE","GASOLINE"] * F_t ["GASOLINE", h, td]  ) / 1000 , "Gasoline",
+    "#808080", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["MOTORCYCLE_GASOLINE_URBAN", h, td] + F_t ["CAR_GASOLINE_URBAN", h, td] + F_t ["CAR_HEV_URBAN", h, td] + F_t ["CAR_PHEV_URBAN", h, td]   ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gasoline" , "Mob priv urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["MOTORCYCLE_GASOLINE_URBAN","GASOLINE"] * F_t ["MOTORCYCLE_GASOLINE_URBAN", h, td] -layers_in_out["CAR_GASOLINE_URBAN","GASOLINE"] * F_t ["CAR_GASOLINE_URBAN", h, td] -layers_in_out["CAR_HEV_URBAN","GASOLINE"] * F_t ["CAR_HEV_URBAN", h, td] -layers_in_out["CAR_PHEV_URBAN","GASOLINE"] * F_t ["CAR_PHEV_URBAN", h, td]   ) / 1000 , "Gasoline",
+        "#D3D3D3", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["MOTORCYCLE_GASOLINE_RURAL", h, td] + F_t ["CAR_GASOLINE_RURAL", h, td] + F_t ["CAR_HEV_RURAL", h, td] + F_t ["CAR_PHEV_RURAL", h, td]   ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gasoline" , "Mob priv rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["MOTORCYCLE_GASOLINE_RURAL","GASOLINE"] * F_t ["MOTORCYCLE_GASOLINE_RURAL", h, td] -layers_in_out["CAR_GASOLINE_RURAL","GASOLINE"] * F_t ["CAR_GASOLINE_RURAL", h, td] -layers_in_out["CAR_HEV_RURAL","GASOLINE"] * F_t ["CAR_HEV_RURAL", h, td] -layers_in_out["CAR_PHEV_RURAL","GASOLINE"] * F_t ["CAR_PHEV_RURAL", h, td]   ) / 1000 , "Gasoline",
+        "#D3D3D3", "TWh" >> (PathName & "/sankey/input2sankey.csv");
 
 ## Diesel
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["DIESEL", h, td]  ) > 10 then
@@ -231,16 +230,26 @@ if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t
     printf "%s,%s,%.2f,%s,%s,%s\n", "Imp. Bio-diesel" , "Diesel", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
         TYPICAL_DAY_OF_PERIOD[t]}(layers_in_out["BIODIESEL","DIESEL"] * F_t ["BIODIESEL", h, td]  ) / 1000 , "Diesel",
         "#D3D3D3", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_DIESEL", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_DIESEL","DIESEL"] * F_t ["CAR_DIESEL", h, td]  ) / 1000 , "Diesel",
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_DIESEL_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob priv urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_DIESEL_URBAN","DIESEL"] * F_t ["CAR_DIESEL_URBAN", h, td]  ) / 1000 , "Diesel",
         "#D3D3D3", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BUS_COACH_DIESEL", h, td] +
-F_t["BUS_COACH_HYDIESEL", h, td])  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob public", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_COACH_DIESEL","DIESEL"] * F_t ["BUS_COACH_DIESEL", h, td]   -
-        layers_in_out["BUS_COACH_HYDIESEL","DIESEL"] * F_t ["BUS_COACH_HYDIESEL", h, td]   ) / 1000 , "Diesel", "#D3D3D3", "TWh"
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BUS_DIESEL_URBAN", h, td] +
+F_t["BUS_HYDIESEL_URBAN", h, td])  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob public urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_DIESEL_URBAN","DIESEL"] * F_t ["BUS_DIESEL_URBAN", h, td]   -
+        layers_in_out["BUS_HYDIESEL_URBAN","DIESEL"] * F_t ["BUS_HYDIESEL_URBAN", h, td]) / 1000 , "Diesel", "#D3D3D3", "TWh"
         > (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_DIESEL_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob priv rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_DIESEL_RURAL","DIESEL"] * F_t ["CAR_DIESEL_RURAL", h, td]  ) / 1000 , "Diesel",
+        "#D3D3D3", "TWh" >> (PathName & "/sankey/input2sankey.csv"); 
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["BUS_DIESEL_RURAL", h, td] +
+F_t["BUS_HYDIESEL_RURAL", h, td])  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Mob public rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_DIESEL_RURAL","DIESEL"] * F_t ["BUS_DIESEL_RURAL", h, td]   -
+        layers_in_out["BUS_HYDIESEL_RURAL","DIESEL"] * F_t ["BUS_HYDIESEL_RURAL", h, td]) / 1000 , "Diesel", "#D3D3D3", "TWh"
+        > (PathName & "/sankey/input2sankey.csv");       
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]} ((F_t ["TRUCK_DIESEL", h, td] + F_t ["BOAT_FREIGHT_DIESEL", h, td] )  ) > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "Diesel" , "Freight", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
         TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["TRUCK_DIESEL","DIESEL"] * F_t ["TRUCK_DIESEL", h, td]  -layers_in_out["BOAT_FREIGHT_DIESEL","DIESEL"] * F_t ["BOAT_FREIGHT_DIESEL", h, td]  ) / 1000 , "Diesel", "#D3D3D3", "TWh"
@@ -276,13 +285,21 @@ if F ["GAS_STORAGE"] <= 0.001 then
         TYPICAL_DAY_OF_PERIOD[t]}( layers_in_out["GASIFICATION_SNG","GAS"] * F_t ["GASIFICATION_SNG", h, td] + layers_in_out["BIOMETHANATION","GAS"] * F_t ["BIOMETHANATION", h, td] + layers_in_out["BIO_HYDROLYSIS","GAS"] * F_t ["BIO_HYDROLYSIS", h, td] + layers_in_out["SYN_METHANATION","GAS"] * F_t ["SYN_METHANATION", h, td]
                                   - Storage_in["GAS_STORAGE", "GAS", h, td] ) / 1000 ,
         "GAS", "#FFD700", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_NG", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_NG","GAS"] * F_t ["CAR_NG", h, td]  ) / 1000 , "GAS", "#FFD700", "TWh" >>
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_NG_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob priv urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_NG_URBAN","GAS"] * F_t ["CAR_NG_URBAN", h, td]  ) / 1000 , "GAS", "#FFD700", "TWh" >>
         (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_COACH_CNG_STOICH", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob public", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_COACH_CNG_STOICH","GAS"] * F_t ["BUS_COACH_CNG_STOICH", h, td]  ) / 1000 ,
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_NG_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob public urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_NG_URBAN","GAS"] * F_t ["BUS_NG_URBAN", h, td]  ) / 1000 ,
+        "GAS", "#FFD700", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_NG_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob priv rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_NG_RURAL","GAS"] * F_t ["CAR_NG_RURAL", h, td]  ) / 1000 , "GAS", "#FFD700", "TWh" >>
+        (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_NG_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Mob public rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_NG_RURAL","GAS"] * F_t ["BUS_NG_RURAL", h, td]  ) / 1000 ,
         "GAS", "#FFD700", "TWh" >> (PathName & "/sankey/input2sankey.csv");
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BOAT_FREIGHT_NG", h, td] + F_t ["TRUCK_NG", h, td]  ) > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "Gas" , "Freight", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
@@ -446,15 +463,25 @@ if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t
 #------------------------------------------
 # SANKEY - Electricity use
 #------------------------------------------
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}((F_t ["CAR_PHEV", h, td] + F_t ["CAR_BEV", h, td]) ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_PHEV","ELECTRICITY"] * F_t ["CAR_PHEV", h, td]   -
-        layers_in_out["CAR_BEV","ELECTRICITY"] * F_t ["CAR_BEV", h, td]  ) / 1000 , "Electricity", "#00BFFF", "TWh" >>
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}((F_t ["CAR_PHEV_URBAN", h, td] + F_t ["CAR_BEV_URBAN", h, td] + F_t ["BIKE_ELEC_URBAN", h, td] + F_t ["MOTORCYCLE_BEV_URBAN", h, td])) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob priv urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_PHEV_URBAN","ELECTRICITY"] * F_t ["CAR_PHEV_URBAN", h, td]   -
+        layers_in_out["CAR_BEV_URBAN","ELECTRICITY"] * F_t ["CAR_BEV_URBAN", h, td]  -layers_in_out["BIKE_ELEC_URBAN","ELECTRICITY"] * F_t ["BIKE_ELEC_URBAN", h, td] -layers_in_out["MOTORCYCLE_BEV_URBAN","ELECTRICITY"] * F_t ["MOTORCYCLE_BEV_URBAN", h, td]) / 1000 , "Electricity", "#00BFFF", "TWh" >>
         (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["TRAIN_PUB", h, td] + F_t ["TRAMWAY_TROLLEY", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob public", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["TRAIN_PUB","ELECTRICITY"] * F_t ["TRAIN_PUB", h, td]   -
-        layers_in_out["TRAMWAY_TROLLEY","ELECTRICITY"] * F_t ["TRAMWAY_TROLLEY", h, td]  ) / 1000 , "Electricity", "#00BFFF",
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_ELEC_RURAL", h, td] + F_t ["METRO_ELEC_URBAN", h, td] + F_t ["TRAMWAY_ELEC_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob public urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["METRO_ELEC_URBAN","ELECTRICITY"] * F_t ["METRO_ELEC_URBAN", h, td]   -
+        layers_in_out["TRAMWAY_ELEC_URBAN","ELECTRICITY"] * F_t ["TRAMWAY_ELEC_URBAN", h, td] -layers_in_out["BUS_ELEC_URBAN","ELECTRICITY"] * F_t ["BUS_ELEC_URBAN", h, td] ) / 1000 , "Electricity", "#00BFFF",
+        "TWh" > (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}((F_t ["CAR_PHEV_RURAL", h, td] + F_t ["CAR_BEV_RURAL", h, td] + F_t ["BIKE_ELEC_RURAL", h, td] + F_t ["MOTORCYCLE_BEV_RURAL", h, td])) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob priv rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_PHEV_RURAL","ELECTRICITY"] * F_t ["CAR_PHEV_RURAL", h, td]   -
+        layers_in_out["CAR_BEV_RURAL","ELECTRICITY"] * F_t ["CAR_BEV_RURAL", h, td]  -layers_in_out["BIKE_ELEC_RURAL","ELECTRICITY"] * F_t ["BIKE_ELEC_RURAL", h, td] -layers_in_out["MOTORCYCLE_BEV_RURAL","ELECTRICITY"] * F_t ["MOTORCYCLE_BEV_RURAL", h, td])  / 1000 , "Electricity", "#00BFFF", "TWh" >>
+        (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_ELEC_RURAL", h, td] + F_t ["TRAIN_ELEC_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Mob public rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_ELEC_RURAL","ELECTRICITY"] * F_t ["BUS_ELEC_RURAL", h, td]   -
+        layers_in_out["TRAIN_ELEC_RURAL","ELECTRICITY"] * F_t ["TRAIN_ELEC_RURAL", h, td]  ) / 1000 , "Electricity", "#00BFFF",
         "TWh" > (PathName & "/sankey/input2sankey.csv");
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["TRAIN_FREIGHT", h, td] + F_t ["TRUCK_ELEC", h, td])  > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "Elec" , "Freight", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
@@ -569,13 +596,21 @@ if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t
     printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "CHP", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
         TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["DEC_ADVCOGEN_H2","H2"] * F_t ["DEC_ADVCOGEN_H2", h, td]  ) / 1000 , "H2",
         "#FF00FF", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_FUEL_CELL", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob priv", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_FUEL_CELL","H2"] * F_t ["CAR_FUEL_CELL", h, td]  ) / 1000 , "H2",
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_FC_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob priv urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_FC_URBAN","H2"] * F_t ["CAR_FC_URBAN", h, td]  ) / 1000 , "H2",
         "#FF00FF", "TWh" >> (PathName & "/sankey/input2sankey.csv");
-if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_COACH_FC_HYBRIDH2", h, td]  ) > 10 then
-    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob public", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
-        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_COACH_FC_HYBRIDH2","H2"] * F_t ["BUS_COACH_FC_HYBRIDH2", h, td]  ) / 1000 ,
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_FC_URBAN", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob public urban", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_FC_URBAN","H2"] * F_t ["BUS_FC_URBAN", h, td]  ) / 1000 ,
+        "H2", "#FF00FF", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["CAR_FC_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob priv rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["CAR_FC_RURAL","H2"] * F_t ["CAR_FC_RURAL", h, td]  ) / 1000 , "H2",
+        "#FF00FF", "TWh" >> (PathName & "/sankey/input2sankey.csv");
+if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["BUS_FC_RURAL", h, td]  ) > 10 then
+    printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Mob public rural", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in
+        TYPICAL_DAY_OF_PERIOD[t]}(-layers_in_out["BUS_FC_RURAL","H2"] * F_t ["BUS_FC_RURAL", h, td]  ) / 1000 ,
         "H2", "#FF00FF", "TWh" >> (PathName & "/sankey/input2sankey.csv");
 if sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in TYPICAL_DAY_OF_PERIOD[t]}(F_t ["TRUCK_FUEL_CELL", h, td]  ) > 10 then
     printf "%s,%s,%.2f,%s,%s,%s\n", "H2" , "Freight", sum{t in PERIODS, h in HOUR_OF_PERIOD[t], td in

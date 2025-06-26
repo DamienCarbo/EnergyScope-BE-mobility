@@ -7,7 +7,10 @@ This script modifies the input data and runs the EnergyScope model
 
 import os
 from pathlib import Path
-
+from amplpy import AMPL, ampl_notebook
+ampl = ampl_notebook(
+    modules=["highs", "cbc", "gurobi", "cplex"], # pick from over 20 modules including most commercial and open-source solvers
+    license_uuid="7413bb53-8ce0-45bf-bccd-4d1086609522") # your license UUID (e.g., free ampl.com/ce or ampl.com/courses licenses)
 import sys
 sys.path.append("c:/Users/Dam/Documents/memoire/Programs/EnergyScope-EnergyScope.py")
 
@@ -24,6 +27,7 @@ if __name__ == '__main__':
     
    # Reading the data of the csv
     es.import_data(config)
+
 
     if compute_TDs:
         es.build_td_of_days(config)
